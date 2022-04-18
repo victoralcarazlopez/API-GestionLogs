@@ -1,0 +1,404 @@
+openapi: 3.0.1
+info:
+  title: OpenLogs API
+  version: '1.0'
+  description: APIRest para la gestión de logs
+servers:
+  - url: http://127.0.0.1:80/api/v1
+tags:
+  - name: "\U0001F9F7 Logs"
+    description: Logs
+
+paths:
+  /logs:
+    post:
+      summary: Crear log
+      operationId: post-logs
+      tag: [ "\U0001F9F7 Logs"]
+      responses:
+        '201':
+          description: Nuevo log creado
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Log'
+              examples:
+                EjemploLog:
+                  $ref: '#/components/examples/EjemploLog'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Log'
+        '422':
+          $ref: '#/components/responses/Respuesta_422'
+      description: Añade un nuevo log
+      requestBody:
+        $ref: '#/components/requestBodies/logRB'
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/order'
+    parameters: []
+    options:
+      summary: Ver opciones
+      operationId: options-logs
+      responses:
+        '204':
+          description: El cuerpo de la respuesta esta vacío
+      description: Devuelve una lista de métodos HTTP soportados
+      x-: null
+    get:
+      summary: Obtener logs
+      operationId: get-logs
+      responses:
+        '200':
+          description: OK. Hay logs encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Log'
+              examples:
+                example-1:
+                  value:
+                    - id: 0
+                      fecha: '2019-08-24'
+                      mensaje: string
+                      prioridad: Alta
+                      usuario: пример.ру
+                      subsistema: 1
+        '404':
+          $ref: '#/components/responses/Respuesta_404'
+      description: Obtiene todos los logs
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/order'
+  '/logs/{logid}':
+    parameters:
+      - $ref: '#/components/parameters/logid'
+    delete:
+      summary: Borrar log
+      operationId: delete-logs-logid
+      responses:
+        '200':
+          description: Log eliminado correctamente
+        '404':
+          $ref: '#/components/responses/Respuesta_404'
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: logid
+          description: id del log deseado
+      x-internal: false
+    options:
+      summary: Ver opciones
+      operationId: options-logs-logid
+      responses:
+        '204':
+          description: El cuerpo de la respuesta esta vacío
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: logid
+          description: id del log deseado
+      description: Devuelve una lista de métodos HTTP soportados
+    put:
+      summary: Modificar log
+      operationId: put-logs-logid
+      responses:
+        '200':
+          description: Generar el log correctamente
+        '404':
+          $ref: '#/components/responses/Respuesta_404'
+        '412':
+          $ref: '#/components/responses/Respuesta_412'
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+    get:
+      summary: Obtener log
+      operationId: get-logs-logid
+      responses:
+        '200':
+          description: OK
+        '404':
+          $ref: '#/components/responses/Respuesta_404'
+      description: Obtener un log mediante logid
+      parameters: []
+components:
+  schemas:
+    Log:
+      description: Modelo con los atributos de un log
+      type: object
+      x-examples:
+        example-1:
+          ID: integer
+          Fecha: string
+          Mensaje: string
+          Prioridad: string
+          Usuario: string
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          maximum: 99999
+        fecha:
+          type: string
+          minLength: 1
+          format: date
+        mensaje:
+          type: string
+          minLength: 1
+        prioridad:
+          type: string
+          minLength: 0
+          enum:
+            - Alta
+            - Baja
+        usuario:
+          type: string
+          minLength: 1
+          format: idn-email
+        subsistema:
+          type: integer
+          minimum: 1
+          maximum: 7
+      required:
+        - id
+        - fecha
+        - mensaje
+        - prioridad
+        - usuario
+  securitySchemes:
+    APIKey1:
+      name: API Key
+      type: apiKey
+      in: query
+  parameters:
+    page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: Número de página
+    logid:
+      name: logid
+      in: path
+      required: true
+      schema:
+        type: string
+      description: id del log deseado
+    IfMatch:
+      name: IfMatch
+      in: header
+      schema:
+        type: string
+        pattern: '[0-9a-f]*'
+      description: ETag del log que se desea modificar
+    order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - ASC
+          - DESC
+      description: Ordenación 'ASC | 'DESC'
+  responses:
+    Respuesta_422:
+      description: Entidad no procesable
+      content:
+        application/json:
+          schema:
+            description: ''
+            type: object
+            properties:
+              type:
+                type: string
+                minLength: 1
+              title:
+                type: string
+                minLength: 1
+              status:
+                type: number
+              detail:
+                type: string
+                minLength: 1
+              instance:
+                type: string
+                minLength: 1
+            required:
+              - type
+              - title
+              - status
+              - detail
+              - instance
+            x-examples:
+              example-1:
+                type: 'https://httpstatuses.com/422'
+                title: UNPROCESSABLE ENTITY
+                status: 422
+                detail: 'Falta alguno de los atributos obligatorios (nombre, empresa, version o año_publicación)'
+                instance: 'about:blank'
+          examples:
+            Respuesta422:
+              $ref: '#/components/examples/Respuesta422'
+    Respuesta_412:
+      description: Precondición fallida
+      content:
+        application/json:
+          schema:
+            description: ''
+            type: object
+            properties:
+              type:
+                type: string
+                minLength: 1
+              title:
+                type: string
+                minLength: 1
+              status:
+                type: number
+              detail:
+                type: string
+                minLength: 1
+              instance:
+                type: string
+                minLength: 1
+            required:
+              - type
+              - title
+              - status
+              - detail
+              - instance
+            x-examples:
+              example-1:
+                type: 'https://httpstatuses.com/412'
+                title: PRECONDITION FAILED
+                status: 412
+                detail: El ETag proporcionado no está actualizado
+                instance: 'about:blank'
+          examples:
+            Respuesta412:
+              $ref: '#/components/examples/Respuesta412'
+    Respuesta_404:
+      description: No encontrado
+      content:
+        application/json:
+          schema:
+            description: ''
+            type: object
+            properties:
+              type:
+                type: string
+                minLength: 1
+              title:
+                type: string
+                minLength: 1
+              status:
+                type: number
+              detail:
+                type: string
+                minLength: 1
+              instance:
+                type: string
+                minLength: 1
+            required:
+              - type
+              - title
+              - status
+              - detail
+              - instance
+            x-examples:
+              example-1:
+                type: 'https://httpstatuses.com/404'
+                title: NOT FOUND
+                status: 404
+                detail: El recurso solicitado no está disponible.
+                instance: 'about:blank'
+          examples:
+            Respuesta404:
+              $ref: '#/components/examples/Respuesta404'
+  requestBodies:
+    logRB:
+      content:
+        application/json:
+          schema:
+            description: ''
+            type: object
+            x-examples:
+              example-1:
+                ID: 1111
+                Fecha: 23/04/2022
+                Mensaje: Problema de seguridad
+                Prioridad: Alta
+                Usuario: Ramón
+            properties:
+              fecha:
+                type: string
+                minLength: 1
+              mensaje:
+                type: string
+                minLength: 1
+              prioridad:
+                type: string
+                minLength: 1
+              usuario:
+                type: string
+                minLength: 1
+            required:
+              - fecha
+              - mensaje
+              - prioridad
+              - usuario
+          examples:
+            EjemploLogRB:
+              $ref: '#/components/examples/EjemploLogRB'
+      description: Información de un log
+  examples:
+    Respuesta412:
+      value:
+        type: 'https://httpstatuses.com/412'
+        title: PRECONDITION FAILED
+        status: 412
+        detail: El ETag proporcionado no está actualizado
+        instance: 'about:blank'
+    EjemploLog:
+      value:
+        id: 1234
+        fecha: 13/04/2022
+        mensaje: Mensaje log
+        prioridad: Alta
+        usuario: Ramón
+        subsistema: 1
+    EjemploLogRB:
+      value:
+        fecha: 13/04/2022
+        mensaje: Mensaje log
+        prioridad: Alta
+        usuario: Ramón
+        subsistema: 1
+    Respuesta404:
+      value:
+        type: 'https://httpstatuses.com/404'
+        title: NOT FOUND
+        status: 404
+        detail: El recurso solicitado no está disponible.
+        instance: 'about:blank'
+    Respuesta422:
+      value:
+        type: 'https://httpstatuses.com/422'
+        title: UNPROCESSABLE ENTITY
+        status: 422
+        detail: 'Falta alguno de los atributos obligatorios (nombre, empresa, version o año_publicación)'
+        instance: 'about:blank'
+    Log1:
+      value:
+        fecha: 13/04/2022
+        mensaje: Mensaje log
+        prioridad: Alta
+        usuario: Ramón
+        subsistema: 1
