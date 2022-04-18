@@ -11,7 +11,7 @@ El servicio está compuesto por 3 contenedores:
 
 Instrucciones para poner en marcha y probar el servicio.
 
-Unicamnete hay que abrir un terminal en la ruta del proyecto y lanzar:
+Unicamente hay que abrir un terminal en la ruta del proyecto y lanzar:
 docker compose -f ./docker-compose.yaml up -d  
 
 Este comando se encarga de levantar los 3 contenedores y con ello el usuario puede probar la API a través de la url: http://127.0.0.1:8000/
