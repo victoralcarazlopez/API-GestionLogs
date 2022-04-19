@@ -5,13 +5,10 @@ Subsistema_7: Gestión de los logs del resto de subsistemas. Permitirá registra
 
 
 El servicio está compuesto por 3 contenedores:
-- Backend - stoplight/prism: encargado de los mocks para generar las pruebas de la API ***Funcionalidad no implementada***
+- Backend - stoplight/prism: encargado de los mocks para generar las pruebas de la API 
 - Frontend - swaggerapi/swagger-ui: contenedor que muestra una interfaz gráfica de la API para el usuario en el puerto 8000.
 - Proxy - caddy: realiza redirecciones. Funciona recibiendo las peticiones al puerto 80 y todo lo que venga con /api/v1/ se lo redirecciona al contenedor con el Backend
 
 Instrucciones para poner en marcha y probar el servicio.
-
-Unicamente hay que abrir un terminal en la ruta del proyecto y lanzar:
-docker compose -f ./docker-compose.yaml up -d  
-
-Este comando se encarga de levantar los 3 contenedores y con ello el usuario puede probar la API a través de la url: http://127.0.0.1:8000/
+- Abrir un terminal en la ruta del proyecto, para levantar los contenedores lanzar: docker compose -f ./docker-compose.yaml up -d  
+- El usuario puede probar la API en su navegador a través de la url: http://127.0.0.1:8000/
