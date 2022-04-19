@@ -3,18 +3,19 @@ info:
   title: OpenLogs API
   version: '1.0'
   description: APIRest para la gestión de logs
+  contact:
+    name: AOS Subsistema de logs
+    email: info@openlogs.com
 servers:
-  - url: http://127.0.0.1:80/api/v1
+  - url: 'http://127.0.0.1:80/api/v1'
 tags:
   - name: "\U0001F9F7 Logs"
     description: Logs
-
 paths:
   /logs:
     post:
       summary: Crear log
       operationId: post-logs
-      tag: [ "\U0001F9F7 Logs"]
       responses:
         '201':
           description: Nuevo log creado
@@ -37,42 +38,50 @@ paths:
       parameters:
         - $ref: '#/components/parameters/page'
         - $ref: '#/components/parameters/order'
+      tags:
+        - "\U0001F9F7 Logs"
     parameters: []
     options:
       summary: Ver opciones
       operationId: options-logs
       responses:
         '204':
-          description: El cuerpo de la respuesta esta vacío
+          description: '`Options` &lt;El cuerpo de la respuesta esta vacío.'
+          headers:
+            Options:
+              $ref: '#/components/headers/Options'
       description: Devuelve una lista de métodos HTTP soportados
-      x-: null
+      tags:
+        - "\U0001F9F7 Logs"
     get:
       summary: Obtener logs
       operationId: get-logs
       responses:
         '200':
-          description: OK. Hay logs encontrados
+          description: OK. Logs encontrados.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Log'
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Log'
               examples:
-                example-1:
-                  value:
-                    - id: 0
-                      fecha: '2019-08-24'
-                      mensaje: string
-                      prioridad: Alta
-                      usuario: пример.ру
-                      subsistema: 1
+                EjemploLog:
+                  $ref: '#/components/examples/EjemploLog'
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
         '404':
           $ref: '#/components/responses/Respuesta_404'
       description: Obtiene todos los logs
       parameters:
         - $ref: '#/components/parameters/page'
         - $ref: '#/components/parameters/order'
+      tags:
+        - "\U0001F9F7 Logs"
   '/logs/{logid}':
     parameters:
       - $ref: '#/components/parameters/logid'
@@ -84,26 +93,24 @@ paths:
           description: Log eliminado correctamente
         '404':
           $ref: '#/components/responses/Respuesta_404'
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: logid
-          description: id del log deseado
+      parameters: []
       x-internal: false
+      tags:
+        - "\U0001F9F7 Logs"
+      description: Eliminar un log mediante logid
     options:
       summary: Ver opciones
       operationId: options-logs-logid
       responses:
         '204':
-          description: El cuerpo de la respuesta esta vacío
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: logid
-          description: id del log deseado
+          description: '`Options` &lt;El cuerpo de la respuesta esta vacío.'
+          headers:
+            Options:
+              $ref: '#/components/headers/Options'
+      parameters: []
       description: Devuelve una lista de métodos HTTP soportados
+      tags:
+        - "\U0001F9F7 Logs"
     put:
       summary: Modificar log
       operationId: put-logs-logid
@@ -116,28 +123,34 @@ paths:
           $ref: '#/components/responses/Respuesta_412'
       parameters:
         - $ref: '#/components/parameters/IfMatch'
+      tags:
+        - "\U0001F9F7 Logs"
+      description: Generar un log
     get:
       summary: Obtener log
       operationId: get-logs-logid
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
         '404':
           $ref: '#/components/responses/Respuesta_404'
       description: Obtener un log mediante logid
       parameters: []
+      tags:
+        - "\U0001F9F7 Logs"
 components:
   schemas:
     Log:
       description: Modelo con los atributos de un log
       type: object
       x-examples:
-        example-1:
-          ID: integer
-          Fecha: string
-          Mensaje: string
-          Prioridad: string
-          Usuario: string
+        EjemploLog:
+          $ref: '#/components/examples/EjemploLog'
       properties:
         id:
           type: integer
@@ -207,6 +220,19 @@ components:
           - ASC
           - DESC
       description: Ordenación 'ASC | 'DESC'
+  headers:
+    ETag:
+      description: Entity Tag (identificador único proporcionado para validación de caché)
+      schema:
+        type: string
+        pattern: '[0-9a-f]*'
+        x-faker: random.uuid
+        example: 123456789cdcd
+    Options:
+      description: Lista de métodos HTTP soportados
+      schema:
+        type: string
+      example: 'GET,DELETE,PUT,OPTIONS'
   responses:
     Respuesta_422:
       description: Entidad no procesable
@@ -241,7 +267,7 @@ components:
                 type: 'https://httpstatuses.com/422'
                 title: UNPROCESSABLE ENTITY
                 status: 422
-                detail: 'Falta alguno de los atributos obligatorios (nombre, empresa, version o año_publicación)'
+                detail: 'Falta alguno de los atributos obligatorios (id, fecha, mensaje, prioridad o usuario)'
                 instance: 'about:blank'
           examples:
             Respuesta422:
@@ -337,6 +363,8 @@ components:
                 Prioridad: Alta
                 Usuario: Ramón
             properties:
+              id:
+                type: integer
               fecha:
                 type: string
                 minLength: 1
@@ -349,7 +377,10 @@ components:
               usuario:
                 type: string
                 minLength: 1
+              subsistema:
+                type: integer
             required:
+              - id
               - fecha
               - mensaje
               - prioridad
@@ -369,13 +400,14 @@ components:
     EjemploLog:
       value:
         id: 1234
-        fecha: 13/04/2022
+        fecha: '2022-04-13'
         mensaje: Mensaje log
         prioridad: Alta
         usuario: Ramón
         subsistema: 1
     EjemploLogRB:
       value:
+        id: 1111
         fecha: 13/04/2022
         mensaje: Mensaje log
         prioridad: Alta
@@ -395,10 +427,4 @@ components:
         status: 422
         detail: 'Falta alguno de los atributos obligatorios (nombre, empresa, version o año_publicación)'
         instance: 'about:blank'
-    Log1:
-      value:
-        fecha: 13/04/2022
-        mensaje: Mensaje log
-        prioridad: Alta
-        usuario: Ramón
         subsistema: 1
