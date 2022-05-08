@@ -35,14 +35,52 @@ paths:
       description: Añade un nuevo log
       requestBody:
         $ref: '#/components/requestBodies/logRB'
-      parameters:
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/order'
+      parameters: []
       tags:
         - "\U0001F9F7 Logs"
     parameters: []
+    get:
+      summary: Obtener logs
+      description: Obtiene todos los logs
+      tags:
+        - "\U0001F9F7 Logs"
+      operationId: get-logs
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/order'
+        - $ref: '#/components/parameters/ordering'
+      responses:
+        '200':
+          description: OK. Logs encontrados.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    description: array de logs
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Log'
+                  links:
+                    description: Enlaces de paginacion
+                    type: object
+                    properties:
+                      prevPage:
+                        $ref: '#/components/schemas/Link'
+                      nextPage:
+                        $ref: '#/components/schemas/Link'
+                    readOnly: true
+        '404':
+          $ref: '#/components/responses/Respuesta_404'
     options:
+      tags:
+        - "\U0001F9F7 Logs"
       summary: Ver opciones
+      description: Devuelve una lista de métodos HTTP soportados
       operationId: options-logs
       responses:
         '204':
@@ -50,38 +88,6 @@ paths:
           headers:
             Options:
               $ref: '#/components/headers/Options'
-      description: Devuelve una lista de métodos HTTP soportados
-      tags:
-        - "\U0001F9F7 Logs"
-    get:
-      summary: Obtener logs
-      operationId: get-logs
-      responses:
-        '200':
-          description: OK. Logs encontrados.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  logs:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Log'
-              examples:
-                EjemploLog:
-                  $ref: '#/components/examples/EjemploLog'
-          headers:
-            ETag:
-              $ref: '#/components/headers/ETag'
-        '404':
-          $ref: '#/components/responses/Respuesta_404'
-      description: Obtiene todos los logs
-      parameters:
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/order'
-      tags:
-        - "\U0001F9F7 Logs"
   '/logs/{logid}':
     parameters:
       - $ref: '#/components/parameters/logid'
@@ -117,6 +123,10 @@ paths:
       responses:
         '200':
           description: Generar el log correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Log'
         '404':
           $ref: '#/components/responses/Respuesta_404'
         '412':
@@ -135,8 +145,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties: {}
+                $ref: '#/components/schemas/Log'
+              examples:
+                ExampleLog:
+                  $ref: '#/components/examples/EjemploLog'
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
         '404':
           $ref: '#/components/responses/Respuesta_404'
       description: Obtener un log mediante logid
@@ -146,80 +161,56 @@ paths:
 components:
   schemas:
     Log:
-      description: Modelo con los atributos de un log
-      type: object
-      x-examples:
-        EjemploLog:
-          $ref: '#/components/examples/EjemploLog'
-      properties:
-        id:
-          type: integer
-          minimum: 1
-          maximum: 99999
-        fecha:
-          type: string
-          minLength: 1
-          format: date
-        mensaje:
-          type: string
-          minLength: 1
-        prioridad:
-          type: string
-          minLength: 0
-          enum:
-            - Alta
-            - Baja
-        usuario:
-          type: string
-          minLength: 1
-          format: idn-email
-        subsistema:
-          type: integer
-          minimum: 1
-          maximum: 7
-      required:
-        - id
-        - fecha
-        - mensaje
-        - prioridad
-        - usuario
-  securitySchemes:
-    APIKey1:
-      name: API Key
-      type: apiKey
-      in: query
-  parameters:
-    page:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-      description: Número de página
-    logid:
-      name: logid
-      in: path
-      required: true
-      schema:
-        type: string
-      description: id del log deseado
-    IfMatch:
-      name: IfMatch
-      in: header
-      schema:
-        type: string
-        pattern: '[0-9a-f]*'
-      description: ETag del log que se desea modificar
-    order:
-      name: order
-      in: query
-      required: false
-      schema:
-        type: string
-        enum:
-          - ASC
-          - DESC
-      description: Ordenación 'ASC | 'DESC'
+      $ref: ./schemas/Log.yaml
+    Link:
+      $ref: ./schemas/Link.yaml
+    Http_Response:
+      $ref: ./schemas/Http_Response.yaml
+  requestBodies:
+    logRB:
+      content:
+        application/json:
+          schema:
+            description: ''
+            type: object
+            x-examples:
+              example-1:
+                id: 1111
+                fecha: 23/04/2022
+                mensaje: Problema de seguridad
+                prioridad: Alta
+                usuario: Ramón
+            properties:
+              id:
+                type: integer
+              fecha:
+                type: string
+                minLength: 1
+              mensaje:
+                type: string
+                minLength: 1
+              prioridad:
+                type: string
+                minLength: 1
+                enum:
+                  - Alta
+                  - Media
+                  - Baja
+              usuario:
+                type: string
+                minLength: 1
+              subsistema:
+                type: integer
+            required:
+              - id
+              - fecha
+              - mensaje
+              - prioridad
+              - usuario
+          examples:
+            EjemploLogRB:
+              $ref: '#/components/examples/EjemploLogRB'
+      description: Información de un log
   headers:
     ETag:
       description: Entity Tag (identificador único proporcionado para validación de caché)
@@ -315,88 +306,50 @@ components:
       content:
         application/json:
           schema:
-            description: ''
-            type: object
-            properties:
-              type:
-                type: string
-                minLength: 1
-              title:
-                type: string
-                minLength: 1
-              status:
-                type: number
-              detail:
-                type: string
-                minLength: 1
-              instance:
-                type: string
-                minLength: 1
-            required:
-              - type
-              - title
-              - status
-              - detail
-              - instance
-            x-examples:
-              example-1:
-                type: 'https://httpstatuses.com/404'
-                title: NOT FOUND
-                status: 404
-                detail: El recurso solicitado no está disponible.
-                instance: 'about:blank'
+            $ref: '#/components/schemas/Http_Response'
           examples:
             Respuesta404:
               $ref: '#/components/examples/Respuesta404'
-  requestBodies:
-    logRB:
-      content:
-        application/json:
-          schema:
-            description: ''
-            type: object
-            x-examples:
-              example-1:
-                ID: 1111
-                Fecha: 23/04/2022
-                Mensaje: Problema de seguridad
-                Prioridad: Alta
-                Usuario: Ramón
-            properties:
-              id:
-                type: integer
-              fecha:
-                type: string
-                minLength: 1
-              mensaje:
-                type: string
-                minLength: 1
-              prioridad:
-                type: string
-                minLength: 1
-              usuario:
-                type: string
-                minLength: 1
-              subsistema:
-                type: integer
-            required:
-              - id
-              - fecha
-              - mensaje
-              - prioridad
-              - usuario
-          examples:
-            EjemploLogRB:
-              $ref: '#/components/examples/EjemploLogRB'
-      description: Información de un log
+  parameters:
+    page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: Número de página
+    logid:
+      name: logid
+      in: path
+      required: true
+      schema:
+        type: string
+      description: id del log deseado
+    IfMatch:
+      name: IfMatch
+      in: header
+      schema:
+        type: string
+        pattern: '[0-9a-f]*'
+      description: ETag del log que se desea modificar
+    ordering:
+      name: ordering
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - ASC
+          - DESC
+      description: Ordenación 'ASC | 'DESC'
+    order:
+      name: order
+      in: query
+      required: false
+      schema:
+        type: string
+      description: 'Criterio de ordenación: `id`'
   examples:
-    Respuesta412:
-      value:
-        type: 'https://httpstatuses.com/412'
-        title: PRECONDITION FAILED
-        status: 412
-        detail: El ETag proporcionado no está actualizado
-        instance: 'about:blank'
     EjemploLog:
       value:
         id: 1234
@@ -419,6 +372,13 @@ components:
         title: NOT FOUND
         status: 404
         detail: El recurso solicitado no está disponible.
+        instance: 'about:blank'
+    Respuesta412:
+      value:
+        type: 'https://httpstatuses.com/412'
+        title: PRECONDITION FAILED
+        status: 412
+        detail: El ETag proporcionado no está actualizado
         instance: 'about:blank'
     Respuesta422:
       value:
